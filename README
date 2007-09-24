@@ -1,0 +1,15 @@
+= ActiveForm
+
+This plugin provides a base class for making forms with ActiveRecord validations without having a database backing.  You can use ActiveForm for:
+
+* making forms which don't needed storage, like simpel e-mail forms
+* provide extra validations on existing ActiveRecord models
+* make forms for composit objects
+
+
+== Author
+R.W. van 't Veer
+
+
+== Copyright
+Copyright (c) 2007 R.W. van 't Veer
