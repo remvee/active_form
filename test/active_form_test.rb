@@ -102,4 +102,27 @@ class ActiveFormTest < Test::Unit::TestCase
     assert obj.before_save_called
     assert !obj.after_save_called
   end
+
+  def test_create_bang_raises_no_exception_on_valid
+    self.class.class_eval %q{
+      class CreateBangSuccess < ActiveForm; end
+    }
+    
+    assert_nothing_raised do
+      CreateBangSuccess.create!
+    end
+  end
+
+  def test_create_bang_raises_exception_on_invalid
+    self.class.class_eval %q{
+      class CreateBangFailure < ActiveForm
+        column :required_field
+        validates_presence_of :required_field
+      end
+    }
+    
+    assert_raises ActiveRecord::RecordInvalid do
+      CreateBangFailure.create!
+    end
+  end
 end

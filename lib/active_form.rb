@@ -50,4 +50,8 @@ class ActiveForm < ActiveRecord::Base
     callback(:after_save) if result = valid?
     result
   end
+  
+  def save! # :nodoc:
+    save or raise ActiveRecord::RecordInvalid.new(self)
+  end
 end
