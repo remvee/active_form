@@ -62,4 +62,44 @@ class ActiveFormTest < Test::Unit::TestCase
       }
     end
   end
+  
+  def test_after_and_before_save_callbacks_called_on_valid
+    self.class.class_eval %q{
+      class WithCallbackSuccess < ActiveForm
+        attr_accessor :before_save_called, :after_save_called
+        before_save do |obj|
+          obj.before_save_called = true
+        end
+        after_save do |obj|
+          obj.after_save_called = true
+        end
+      end
+    }
+    
+    obj = WithCallbackSuccess.new
+    assert obj.save
+    assert obj.before_save_called
+    assert obj.after_save_called
+  end
+
+  def test_old_before_save_callback_called_on_invalid
+    self.class.class_eval %q{
+      class WithCallbackFailure < ActiveForm
+        column :required_field
+        validates_presence_of :required_field
+        attr_accessor :before_save_called, :after_save_called
+        before_save do |obj|
+          obj.before_save_called = true
+        end
+        after_save do |obj|
+          obj.after_save_called = true
+        end
+      end
+    }
+    
+    obj = WithCallbackFailure.new
+    assert !obj.save
+    assert obj.before_save_called
+    assert !obj.after_save_called
+  end
 end
