@@ -63,44 +63,55 @@ class ActiveFormTest < Test::Unit::TestCase
     end
   end
   
-  def test_after_and_before_save_callbacks_called_on_valid
+  CALLBACKS_CALLED_FOR_VALID = %w(before_validation after_validation before_validation_on_create after_validation_on_create before_save after_save before_create after_create)
+  CALLBACKS_NOT_CALLED_FOR_VALID = %w(before_validation_on_update after_validation_on_update)
+  CALLBACKS_FOR_VALID = CALLBACKS_CALLED_FOR_VALID + CALLBACKS_NOT_CALLED_FOR_VALID
+
+  def test_callbacks_called_on_valid
     self.class.class_eval %q{
       class WithCallbackSuccess < ActiveForm
-        attr_accessor :before_save_called, :after_save_called
-        before_save do |obj|
-          obj.before_save_called = true
-        end
-        after_save do |obj|
-          obj.after_save_called = true
+        CALLBACKS_FOR_VALID.each do |callback|
+          attr_accessor "#{callback}_called"
+          send(callback){|obj| obj.send("#{callback}_called=", true)}
         end
       end
     }
     
     obj = WithCallbackSuccess.new
     assert obj.save
-    assert obj.before_save_called
-    assert obj.after_save_called
+    CALLBACKS_CALLED_FOR_VALID.each do |callback|
+      assert obj.send("#{callback}_called"), "expected #{callback} to be called"
+    end
+    CALLBACKS_NOT_CALLED_FOR_VALID.each do |callback|
+      assert !obj.send("#{callback}_called"), "expected #{callback} not to be called"
+    end
   end
 
-  def test_old_before_save_callback_called_on_invalid
+  CALLBACKS_CALLED_FOR_INVALID = %w(before_validation before_validation_on_create after_validation after_validation_on_create)
+  CALLBACKS_NOT_CALLED_FOR_INVALID = %w(before_validation_on_update after_validation_on_update before_save after_save before_create after_create)
+  CALLBACKS_FOR_INVALID = CALLBACKS_CALLED_FOR_INVALID + CALLBACKS_NOT_CALLED_FOR_INVALID
+
+  def test_callbacks_called_on_invalid
     self.class.class_eval %q{
       class WithCallbackFailure < ActiveForm
-        column :required_field
-        validates_presence_of :required_field
-        attr_accessor :before_save_called, :after_save_called
-        before_save do |obj|
-          obj.before_save_called = true
-        end
-        after_save do |obj|
-          obj.after_save_called = true
+        column :required
+        validates_presence_of :required
+        
+        CALLBACKS_FOR_INVALID.each do |callback|
+          attr_accessor "#{callback}_called"
+          send(callback){|obj| obj.send("#{callback}_called=", true)}
         end
       end
     }
     
     obj = WithCallbackFailure.new
     assert !obj.save
-    assert obj.before_save_called
-    assert !obj.after_save_called
+    CALLBACKS_CALLED_FOR_INVALID.each do |callback|
+      assert obj.send("#{callback}_called"), "expected #{callback} to be called"
+    end
+    CALLBACKS_NOT_CALLED_FOR_INVALID.each do |callback|
+      assert !obj.send("#{callback}_called"), "expected #{callback} not to be called"
+    end
   end
 
   def test_create_bang_raises_no_exception_on_valid

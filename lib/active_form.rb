@@ -46,8 +46,16 @@ class ActiveForm < ActiveRecord::Base
   end
   
   def save # :nodoc:
-    callback(:before_save)
-    callback(:after_save) if result = valid?
+    if result = valid?
+      callback(:before_save)
+      callback(:before_create)
+      
+      # do nothing!
+      
+      callback(:after_save)
+      callback(:after_create)
+    end
+    
     result
   end
   
