@@ -14,7 +14,7 @@
 #
 class ActiveForm < ActiveRecord::Base
   def self.columns # :nodoc:
-    @columns ||= []
+    @columns ||= self == ActiveForm ? [] : superclass.columns.dup
   end
 
   # Define an attribute.  It takes the following options:
