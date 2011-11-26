@@ -136,4 +136,11 @@ class ActiveFormTest < Test::Unit::TestCase
       CreateBangFailure.create!
     end
   end
+  
+  def test_creating_adhoc_forms
+    c = ActiveForm(:zoo, {:foo => {:type => :integer}}, {:bar => {:default => "quux"}})
+    assert_equal 3, c.columns.size
+    assert_equal "quux", c.new.bar
+    assert_equal 0, c.new(:foo => "0").foo
+  end
 end

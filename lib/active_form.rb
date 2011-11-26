@@ -63,3 +63,16 @@ class ActiveForm < ActiveRecord::Base
     save or raise ActiveRecord::RecordInvalid.new(self)
   end
 end
+
+# Return a form class with give columns.  The given +columns+ are
+# either symbols or a single key qvalue map where the key is the
+# column name and the value is a options map to be passed to the
+# +ActiveForm.column+ method.
+def ActiveForm(*columns)
+  Class.new(ActiveForm).tap do |f|
+    columns.each do |c|
+      name, options = Hash === c ? [c.keys.first, c.values.first] : [c, {}]
+      f.column name, options
+    end
+  end
+end
